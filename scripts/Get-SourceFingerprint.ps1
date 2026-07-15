@@ -15,7 +15,12 @@ $lines = foreach ($root in $sourceRoots) {
         Where-Object { $_.FullName -notmatch '[\\/](bin|obj)[\\/]' } |
         ForEach-Object {
             $relative = [System.IO.Path]::GetRelativePath($RepositoryRoot, $_.FullName).Replace('\', '/')
-            $fileHash = (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+            # Git may check out text as LF or CRLF depending on the operating system.
+            # Hash normalized UTF-8 text so Windows release builds and Linux CI agree.
+            $content = [System.IO.File]::ReadAllText($_.FullName).Replace("`r`n", "`n").Replace("`r", "`n")
+            $contentBytes = [System.Text.Encoding]::UTF8.GetBytes($content)
+            $fileHash = [Convert]::ToHexString(
+                [System.Security.Cryptography.SHA256]::HashData($contentBytes)).ToLowerInvariant()
             "$relative`:$fileHash"
         }
 }
