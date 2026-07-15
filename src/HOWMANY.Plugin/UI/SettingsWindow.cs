@@ -1,5 +1,6 @@
 using System.Numerics;
 using HowMany.Plugin.Models;
+using HowMany.Plugin.Services;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Windowing;
 
@@ -9,19 +10,22 @@ internal sealed class SettingsWindow : Window
 {
     private readonly PluginConfiguration configuration;
     private readonly CounterWindow counterWindow;
+    private readonly TargetTracker tracker;
     private readonly Action save;
 
     public SettingsWindow(
         PluginConfiguration configuration,
         CounterWindow counterWindow,
+        TargetTracker tracker,
         Action save)
         : base("HOWMANY settings###HOWMANYSettings")
     {
         this.configuration = configuration;
         this.counterWindow = counterWindow;
+        this.tracker = tracker;
         this.save = save;
 
-        Size = new Vector2(485, 520);
+        Size = new Vector2(515, 650);
         SizeCondition = ImGuiCond.FirstUseEver;
         SizeConstraints = new WindowSizeConstraints
         {
@@ -33,7 +37,7 @@ internal sealed class SettingsWindow : Window
     public override void Draw()
     {
         ImGui.TextColored(new Vector4(0.46f, 0.82f, 1f, 1f), "HOWMANY");
-        ImGui.TextWrapped("Shows how many visible enemy players currently have you as their hard target, with one official job icon per opponent.");
+        ImGui.TextWrapped("Shows how many visible opponents are focusing or actively pressuring you, with one official job icon per opponent.");
         ImGui.Spacing();
 
         DrawCheckbox("Enable overlay", configuration.Enabled, value => configuration.Enabled = value);
@@ -52,6 +56,17 @@ internal sealed class SettingsWindow : Window
         {
             counterWindow.PreviewEnabled = preview;
         }
+
+        ImGui.Separator();
+        ImGui.TextUnformatted("Crystalline Conflict detection");
+        DrawSlider(
+            "Recent pressure duration",
+            configuration.PressureWindowSeconds,
+            0.5f,
+            8f,
+            value => configuration.PressureWindowSeconds = value,
+            "%.1f s");
+        ImGui.TextWrapped("CC does not always expose an opponent's current hard target. HOWMANY therefore keeps an opponent visible briefly after a harmful attempt hits, misses, is blocked, resisted, or absorbed by Guard. Heals and buffs do not count.");
 
         ImGui.Separator();
         ImGui.TextUnformatted("Appearance");
@@ -77,8 +92,20 @@ internal sealed class SettingsWindow : Window
 
         ImGui.Separator();
         ImGui.TextDisabled("Detection notes");
-        ImGui.TextWrapped("Only opponents currently loaded by your game client can be counted. HOWMANY reads their visible hard-target field; soft targets, mouse-over targets, and enemies outside client range are not detectable.");
-        ImGui.TextWrapped("No combat data, character name, account identifier, or network request is used.");
+        ImGui.TextWrapped("The display combines visible hostile hard/cast targets with recent harmful pressure. AoE hits can briefly count an opponent even when their hard target is someone else. Enemies outside client range are not detectable.");
+        ImGui.TextWrapped("No character name, account identifier, or combat history is saved or sent. HOWMANY makes no network requests.");
+
+        if (ImGui.CollapsingHeader("Live diagnostics"))
+        {
+            var value = tracker.Diagnostics;
+            ImGui.TextUnformatted(value.IsActive ? "PvP tracker: active" : "PvP tracker: inactive");
+            ImGui.TextUnformatted($"Territory: {value.TerritoryId}");
+            ImGui.TextUnformatted($"Visible players: {value.VisiblePlayers}");
+            ImGui.TextUnformatted($"Hard targets / casts: {value.NativeHardTargetMatches} / {value.CastTargetMatches}");
+            ImGui.TextUnformatted($"Recent pressure / shown: {value.RecentPressurePlayers} / {value.DisplayedPlayers}");
+            ImGui.TextUnformatted($"Pressure capture: {(value.PressureCaptureAvailable ? "ready" : "unavailable")}");
+            ImGui.TextDisabled("No names or identifiers are included. The same line is available with /howmany debug.");
+        }
     }
 
     private void DrawCheckbox(string label, bool current, Action<bool> assign)

@@ -2,11 +2,11 @@
   {
     "Author": "kittenhaswares-ui",
     "Name": "HOWMANY",
-    "Punchline": "See how many PvP opponents are targeting you.",
-    "Description": "A movable and resizable PvP overlay showing how many enemy players are targeting you, with their job icons. Configure with /howmany.",
+    "Punchline": "See how many PvP opponents are focusing you.",
+    "Description": "A movable PvP overlay showing visible enemy hard/cast targets and recent harmful pressure, with job icons. Built primarily for Crystalline Conflict; configure with /howmany.",
     "InternalName": "HOWMANY.Plugin",
-    "AssemblyVersion": "0.1.0.1",
-    "Changelog": "Fixes installation on Dalamud 15 by deferring the first game-state read to the framework thread.",
+    "AssemblyVersion": "0.1.0.2",
+    "Changelog": "Fixes Crystalline Conflict detection with native hard/cast targets plus configurable recent harmful-pressure fallback. Adds /howmany debug and live diagnostics.",
     "RepoUrl": "https://github.com/kittenhaswares-ui/HOWMANY",
     "ApplicableVersion": "any",
     "DalamudApiLevel": 15,
@@ -20,6 +20,6 @@
     "DownloadLinkInstall": "https://raw.githubusercontent.com/kittenhaswares-ui/HOWMANY/main/dist/latest.zip",
     "DownloadLinkUpdate": "https://raw.githubusercontent.com/kittenhaswares-ui/HOWMANY/main/dist/latest.zip",
     "DownloadLinkTesting": "https://raw.githubusercontent.com/kittenhaswares-ui/HOWMANY/main/dist/latest.zip",
-    "LastUpdate": "1784148310"
+    "LastUpdate": "1784151153"
   }
 ]

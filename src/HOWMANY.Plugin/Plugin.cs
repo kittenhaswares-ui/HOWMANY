@@ -29,6 +29,7 @@ public sealed class Plugin : IDalamudPlugin
         IClientState clientState,
         IObjectTable objectTable,
         IFramework framework,
+        IGameInteropProvider interop,
         ITextureProvider textureProvider,
         IPluginLog log)
     {
@@ -40,15 +41,15 @@ public sealed class Plugin : IDalamudPlugin
         configuration = pluginInterface.GetPluginConfig() as PluginConfiguration ?? new PluginConfiguration();
         configuration.Initialize(pluginInterface);
 
-        targetTracker = new TargetTracker(clientState, objectTable, framework, configuration);
+        targetTracker = new TargetTracker(clientState, objectTable, framework, interop, log, configuration);
         counterWindow = new CounterWindow(configuration, targetTracker, textureProvider);
-        settingsWindow = new SettingsWindow(configuration, counterWindow, configuration.Save);
+        settingsWindow = new SettingsWindow(configuration, counterWindow, targetTracker, configuration.Save);
         windowSystem.AddWindow(counterWindow);
         windowSystem.AddWindow(settingsWindow);
 
         commandManager.AddHandler(Command, new CommandInfo(OnCommand)
         {
-            HelpMessage = "Open HOWMANY settings. Subcommands: show, hide, lock, unlock, preview, reset, help.",
+            HelpMessage = "Open HOWMANY settings. Subcommands: show, hide, lock, unlock, preview, debug, reset, help.",
         });
 
         pluginInterface.UiBuilder.Draw += Draw;
@@ -109,6 +110,9 @@ public sealed class Plugin : IDalamudPlugin
                 counterWindow.PreviewEnabled = !counterWindow.PreviewEnabled;
                 chatGui.Print($"[HOWMANY] Preview {(counterWindow.PreviewEnabled ? "enabled" : "disabled")} for this session.");
                 return;
+            case "debug":
+                chatGui.Print($"[HOWMANY] {targetTracker.Diagnostics.ToChatLine()}");
+                return;
             case "reset":
                 configuration.ResetToDefaults();
                 counterWindow.PreviewEnabled = false;
@@ -128,7 +132,7 @@ public sealed class Plugin : IDalamudPlugin
 
     private void PrintHelp(bool error = false)
     {
-        const string text = "Usage: /howmany [show|hide|lock|unlock|preview|reset|help]. /howmany opens settings.";
+        const string text = "Usage: /howmany [show|hide|lock|unlock|preview|debug|reset|help]. /howmany opens settings.";
         if (error) chatGui.PrintError($"[HOWMANY] {text}");
         else chatGui.Print($"[HOWMANY] {text}");
     }

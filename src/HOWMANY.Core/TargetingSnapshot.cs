@@ -24,7 +24,8 @@ public sealed class TargetingSnapshot
 
     public static TargetingSnapshot Build(
         ulong localGameObjectId,
-        IEnumerable<PlayerObservation> players)
+        IEnumerable<PlayerObservation> players,
+        IReadOnlySet<ulong>? recentPressureSources = null)
     {
         ArgumentNullException.ThrowIfNull(players);
         if (localGameObjectId == 0) return Empty;
@@ -33,10 +34,11 @@ public sealed class TargetingSnapshot
         var opponents = new List<TargetingOpponent>();
         foreach (var player in players)
         {
+            var hasExactHostileTarget = player.TargetObjectId == localGameObjectId && player.IsHostile;
+            var hasRecentPressure = recentPressureSources?.Contains(player.GameObjectId) == true;
             if (player.GameObjectId == 0 ||
                 player.GameObjectId == localGameObjectId ||
-                player.TargetObjectId != localGameObjectId ||
-                !player.IsHostile ||
+                (!hasExactHostileTarget && !hasRecentPressure) ||
                 player.IsDead ||
                 !seen.Add(player.GameObjectId))
             {

@@ -5,7 +5,7 @@ namespace HowMany.Plugin.Models;
 
 public sealed class PluginConfiguration : IPluginConfiguration
 {
-    public int Version { get; set; } = 1;
+    public int Version { get; set; } = 2;
     public bool Enabled { get; set; } = true;
     public bool Locked { get; set; }
     public bool ClickThroughWhenLocked { get; set; } = true;
@@ -18,17 +18,25 @@ public sealed class PluginConfiguration : IPluginConfiguration
     public float IconSpacing { get; set; } = 4f;
     public float BackgroundOpacity { get; set; } = 0.62f;
     public int IconsPerRow { get; set; } = 5;
+    public float PressureWindowSeconds { get; set; } = 3f;
 
     [NonSerialized]
     private IDalamudPluginInterface? pluginInterface;
 
-    public void Initialize(IDalamudPluginInterface value) => pluginInterface = value;
+    public void Initialize(IDalamudPluginInterface value)
+    {
+        pluginInterface = value;
+        if (Version >= 2) return;
+        Version = 2;
+        PressureWindowSeconds = 3f;
+        Save();
+    }
 
     public void Save() => pluginInterface?.SavePluginConfig(this);
 
     public void ResetToDefaults()
     {
-        Version = 1;
+        Version = 2;
         Enabled = true;
         Locked = false;
         ClickThroughWhenLocked = true;
@@ -41,5 +49,6 @@ public sealed class PluginConfiguration : IPluginConfiguration
         IconSpacing = 4f;
         BackgroundOpacity = 0.62f;
         IconsPerRow = 5;
+        PressureWindowSeconds = 3f;
     }
 }

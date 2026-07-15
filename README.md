@@ -1,6 +1,6 @@
 # HOWMANY
 
-HOWMANY is a small Dalamud PvP HUD plugin for Final Fantasy XIV, built primarily for Crystalline Conflict. It shows a large, configurable number for the hostile players who currently have your character as their hard target, followed by one official in-game job icon per targeting opponent.
+HOWMANY is a small Dalamud PvP HUD plugin for Final Fantasy XIV, built primarily for Crystalline Conflict. It shows a large, configurable number for opponents who are focusing or actively pressuring your character, followed by one official in-game job icon per opponent.
 
 ## Install
 
@@ -21,6 +21,7 @@ Run `/howmany` to open the settings window. The overlay can be moved while unloc
 - visibility, background, icons, and threat-color toggles;
 - a temporary outside-PvP preview for positioning;
 - optional display at Wolves' Den Pier.
+- an adjustable recent-pressure duration for Crystalline Conflict.
 
 Useful commands:
 
@@ -31,14 +32,20 @@ Useful commands:
 /howmany lock
 /howmany unlock
 /howmany preview
+/howmany debug
 /howmany reset
 ```
 
 ## What the number means
 
-HOWMANY counts living hostile players currently loaded by your game client whose visible **hard target** is your character. It does not claim to detect soft targets, focus targets, mouse-over targets, AoE intent, enemies outside client range, or whether an opponent is actively pressing an attack.
+HOWMANY combines two local signals:
 
-The default layout is tuned for Crystalline Conflict's five-player enemy team. The overlay is enabled only in active PvP areas other than Wolves' Den Pier. Frontline remains supported as a bonus and wraps larger groups across multiple icon rows; Rival Wings should use the same game-provided hostile/target state but still needs broader live testing.
+- visible hostile players whose native hard target or active cast target is your character; and
+- visible opponents whose harmful action affected your character within the configured recent-pressure duration.
+
+The pressure fallback recognizes damage, blocks, parries, misses, full resists, and invulnerability/Guard outcomes. It ignores healing and buffs. This is necessary because Crystalline Conflict does not consistently expose opponents' current hard-target state to the client. An AoE can therefore keep an opponent visible briefly even when their hard target is another player. Soft targets, focus targets, mouse-over targets, and enemies outside client range remain undetectable.
+
+The default layout and three-second pressure duration are tuned for Crystalline Conflict's five-player enemy team. The overlay is enabled in every active PvP duty other than Wolves' Den Pier. Frontline remains supported as a bonus and wraps larger groups across multiple icon rows; Rival Wings uses the same detection path but still needs broader live testing. Run `/howmany debug` for an anonymous live diagnostic line if the overlay behaves unexpectedly.
 
 ## Privacy
 

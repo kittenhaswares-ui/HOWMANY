@@ -5,6 +5,8 @@ var tests = new (string Name, Action Run)[]
     ("filters to living hostile hard-targeters", FiltersTargeters),
     ("deduplicates game objects but preserves separate same-job enemies", DeduplicatesObjects),
     ("handles missing local player", HandlesMissingLocalPlayer),
+    ("adds recent harmful pressure without trusting the hostile flag", AddsRecentPressure),
+    ("deduplicates exact targets and recent pressure", DeduplicatesHybridSources),
 };
 
 foreach (var test in tests)
@@ -54,6 +56,34 @@ static void HandlesMissingLocalPlayer()
 {
     var snapshot = TargetingSnapshot.Build(0, [new(1, 0, 32, true, false)]);
     Equal(0, snapshot.Count, "missing local player count");
+}
+
+static void AddsRecentPressure()
+{
+    const ulong local = 300;
+    PlayerObservation[] players =
+    [
+        new(20, 999, 38, false, false),
+        new(21, 999, 32, false, true),
+        new(22, 999, 40, false, false),
+    ];
+
+    var snapshot = TargetingSnapshot.Build(local, players, new HashSet<ulong> { 20, 21 });
+    Equal(1, snapshot.Count, "living pressure source");
+    SequenceEqual(new ulong[] { 20 }, snapshot.Opponents.Select(x => x.GameObjectId), "pressure source id");
+}
+
+static void DeduplicatesHybridSources()
+{
+    const ulong local = 400;
+    PlayerObservation[] players =
+    [
+        new(30, local, 38, true, false),
+        new(31, local, 32, true, false),
+    ];
+
+    var snapshot = TargetingSnapshot.Build(local, players, new HashSet<ulong> { 30 });
+    Equal(2, snapshot.Count, "hybrid union");
 }
 
 static void Equal<T>(T expected, T actual, string label) where T : notnull

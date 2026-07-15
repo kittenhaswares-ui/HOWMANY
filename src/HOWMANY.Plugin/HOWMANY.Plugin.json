@@ -1,8 +1,8 @@
 {
   "Author": "kittenhaswares-ui",
   "Name": "HOWMANY",
-  "Punchline": "See how many PvP opponents are targeting you.",
-  "Description": "A movable and resizable PvP overlay showing how many enemy players are targeting you, with their job icons. Configure with /howmany.",
+  "Punchline": "See how many PvP opponents are focusing you.",
+  "Description": "A movable PvP overlay showing visible enemy hard/cast targets and recent harmful pressure, with job icons. Built primarily for Crystalline Conflict; configure with /howmany.",
   "InternalName": "HOWMANY.Plugin",
   "RepoUrl": "https://github.com/kittenhaswares-ui/HOWMANY",
   "ApplicableVersion": "any",
