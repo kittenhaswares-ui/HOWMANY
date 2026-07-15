@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="src/HOWMANY.Core/HOWMANY.Core.csproj" />
+  <Project Path="src/HOWMANY.Plugin/HOWMANY.Plugin.csproj" />
+  <Project Path="tests/HOWMANY.Core.SelfTest/HOWMANY.Core.SelfTest.csproj" />
+</Solution>

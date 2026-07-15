@@ -1,0 +1,15 @@
+{
+  "Author": "kittenhaswares-ui",
+  "Name": "HOWMANY",
+  "Punchline": "See how many PvP opponents are targeting you.",
+  "Description": "A movable and resizable PvP overlay showing how many enemy players are targeting you, with their job icons. Configure with /howmany.",
+  "InternalName": "HOWMANY.Plugin",
+  "RepoUrl": "https://github.com/kittenhaswares-ui/HOWMANY",
+  "ApplicableVersion": "any",
+  "DalamudApiLevel": 15,
+  "Tags": [
+    "pvp",
+    "hud",
+    "utility"
+  ]
+}

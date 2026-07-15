@@ -1,0 +1,124 @@
+using System.Numerics;
+using HowMany.Plugin.Models;
+using Dalamud.Bindings.ImGui;
+using Dalamud.Interface.Windowing;
+
+namespace HowMany.Plugin.UI;
+
+internal sealed class SettingsWindow : Window
+{
+    private readonly PluginConfiguration configuration;
+    private readonly CounterWindow counterWindow;
+    private readonly Action save;
+
+    public SettingsWindow(
+        PluginConfiguration configuration,
+        CounterWindow counterWindow,
+        Action save)
+        : base("HOWMANY settings###HOWMANYSettings")
+    {
+        this.configuration = configuration;
+        this.counterWindow = counterWindow;
+        this.save = save;
+
+        Size = new Vector2(485, 520);
+        SizeCondition = ImGuiCond.FirstUseEver;
+        SizeConstraints = new WindowSizeConstraints
+        {
+            MinimumSize = new Vector2(410, 420),
+            MaximumSize = new Vector2(float.MaxValue, float.MaxValue),
+        };
+    }
+
+    public override void Draw()
+    {
+        ImGui.TextColored(new Vector4(0.46f, 0.82f, 1f, 1f), "HOWMANY");
+        ImGui.TextWrapped("Shows how many visible enemy players currently have you as their hard target, with one official job icon per opponent.");
+        ImGui.Spacing();
+
+        DrawCheckbox("Enable overlay", configuration.Enabled, value => configuration.Enabled = value);
+        DrawCheckbox("Lock overlay", configuration.Locked, value => configuration.Locked = value);
+        if (configuration.Locked)
+        {
+            DrawCheckbox("Click-through while locked", configuration.ClickThroughWhenLocked, value => configuration.ClickThroughWhenLocked = value);
+        }
+
+        DrawCheckbox("Show background", configuration.ShowBackground, value => configuration.ShowBackground = value);
+        DrawCheckbox("Show enemy job icons", configuration.ShowJobIcons, value => configuration.ShowJobIcons = value);
+        DrawCheckbox("Threat colors (0 gray, 2 amber, 3+ red)", configuration.UseThreatColors, value => configuration.UseThreatColors = value);
+        DrawCheckbox("Include Wolves' Den Pier", configuration.IncludeWolvesDen, value => configuration.IncludeWolvesDen = value);
+        var preview = counterWindow.PreviewEnabled;
+        if (ImGui.Checkbox("Preview outside PvP (this session only)", ref preview))
+        {
+            counterWindow.PreviewEnabled = preview;
+        }
+
+        ImGui.Separator();
+        ImGui.TextUnformatted("Appearance");
+        DrawSlider("Number size", configuration.NumberScale, 1f, 5f, value => configuration.NumberScale = value, "%.1fx");
+        DrawSlider("Job icon size", configuration.IconSize, 18f, 72f, value => configuration.IconSize = value, "%.0f px");
+        DrawSlider("Icon spacing", configuration.IconSpacing, 0f, 20f, value => configuration.IconSpacing = value, "%.0f px");
+        DrawIntegerSlider("Icons per row", configuration.IconsPerRow, 1, 16, value => configuration.IconsPerRow = value);
+        if (configuration.ShowBackground)
+        {
+            DrawSlider("Background opacity", configuration.BackgroundOpacity, 0.1f, 1f, value => configuration.BackgroundOpacity = value, "%.0f%%", 100f);
+        }
+
+        ImGui.Spacing();
+        if (ImGui.Button("Reset position")) counterWindow.ResetWindowPosition();
+        ImGui.SameLine();
+        if (ImGui.Button("Reset all settings"))
+        {
+            configuration.ResetToDefaults();
+            counterWindow.PreviewEnabled = false;
+            counterWindow.ResetWindowPosition();
+            save();
+        }
+
+        ImGui.Separator();
+        ImGui.TextDisabled("Detection notes");
+        ImGui.TextWrapped("Only opponents currently loaded by your game client can be counted. HOWMANY reads their visible hard-target field; soft targets, mouse-over targets, and enemies outside client range are not detectable.");
+        ImGui.TextWrapped("No combat data, character name, account identifier, or network request is used.");
+    }
+
+    private void DrawCheckbox(string label, bool current, Action<bool> assign)
+    {
+        var value = current;
+        if (!ImGui.Checkbox(label, ref value)) return;
+        assign(value);
+        save();
+    }
+
+    private void DrawSlider(
+        string label,
+        float current,
+        float minimum,
+        float maximum,
+        Action<float> assign,
+        string format,
+        float displayMultiplier = 1f)
+    {
+        var value = current;
+        var displayed = value * displayMultiplier;
+        if (displayMultiplier == 1f)
+        {
+            if (!ImGui.SliderFloat(label, ref value, minimum, maximum, format)) return;
+        }
+        else
+        {
+            if (!ImGui.SliderFloat(label, ref displayed, minimum * displayMultiplier, maximum * displayMultiplier, format)) return;
+            value = displayed / displayMultiplier;
+        }
+
+        assign(value);
+        save();
+    }
+
+    private void DrawIntegerSlider(string label, int current, int minimum, int maximum, Action<int> assign)
+    {
+        var value = current;
+        if (!ImGui.SliderInt(label, ref value, minimum, maximum)) return;
+        assign(value);
+        save();
+    }
+}

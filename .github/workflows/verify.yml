@@ -1,0 +1,24 @@
+name: Verify release
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - name: Test targeting rules
+        run: dotnet run --project tests/HOWMANY.Core.SelfTest -c Release
+      - name: Verify published package
+        shell: pwsh
+        run: ./scripts/Verify-Release.ps1

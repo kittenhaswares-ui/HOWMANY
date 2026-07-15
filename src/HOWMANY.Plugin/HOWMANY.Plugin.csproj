@@ -1,0 +1,20 @@
+<Project Sdk="Dalamud.NET.Sdk/15.0.0">
+  <PropertyGroup>
+    <Version>0.1.0.0</Version>
+    <AssemblyVersion>0.1.0.0</AssemblyVersion>
+    <FileVersion>0.1.0.0</FileVersion>
+    <AssemblyName>HOWMANY.Plugin</AssemblyName>
+    <RootNamespace>HowMany.Plugin</RootNamespace>
+    <Authors>kittenhaswares-ui</Authors>
+    <Description>A configurable PvP overlay showing how many enemy players are targeting you and their jobs.</Description>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\HOWMANY.Core\HOWMANY.Core.csproj" />
+    <Content Include="HOWMANY.Plugin.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+</Project>
