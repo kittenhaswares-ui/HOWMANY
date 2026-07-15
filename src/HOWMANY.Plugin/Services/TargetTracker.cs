@@ -17,6 +17,7 @@ internal sealed class TargetTracker : IDisposable
     private TargetingOpponent[] targeters = [];
     private long nextUpdateAt;
     private int active;
+    private bool started;
     private bool disposed;
 
     public TargetTracker(
@@ -29,24 +30,25 @@ internal sealed class TargetTracker : IDisposable
         this.objectTable = objectTable;
         this.framework = framework;
         this.configuration = configuration;
-        framework.Update += OnFrameworkUpdate;
     }
 
     public bool IsActive => Volatile.Read(ref active) == 1;
 
     public IReadOnlyList<TargetingOpponent> Targeters => Volatile.Read(ref targeters);
 
-    public void RefreshNow()
+    public void Start()
     {
-        nextUpdateAt = 0;
-        UpdateSnapshot();
+        ObjectDisposedException.ThrowIf(disposed, this);
+        if (started) return;
+        started = true;
+        framework.Update += OnFrameworkUpdate;
     }
 
     public void Dispose()
     {
         if (disposed) return;
         disposed = true;
-        framework.Update -= OnFrameworkUpdate;
+        if (started) framework.Update -= OnFrameworkUpdate;
         Publish(false, []);
     }
 
@@ -61,8 +63,14 @@ internal sealed class TargetTracker : IDisposable
     {
         var inSupportedPvP = clientState.IsPvPExcludingDen ||
                              (configuration.IncludeWolvesDen && clientState.IsPvP);
+        if (!inSupportedPvP)
+        {
+            Publish(false, []);
+            return;
+        }
+
         var localPlayer = objectTable.LocalPlayer;
-        if (!inSupportedPvP || localPlayer is null)
+        if (localPlayer is null)
         {
             Publish(false, []);
             return;

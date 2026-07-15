@@ -54,7 +54,7 @@ public sealed class Plugin : IDalamudPlugin
         pluginInterface.UiBuilder.Draw += Draw;
         pluginInterface.UiBuilder.OpenMainUi += OpenSettings;
         pluginInterface.UiBuilder.OpenConfigUi += OpenSettings;
-        targetTracker.RefreshNow();
+        targetTracker.Start();
     }
 
     public void Dispose()
